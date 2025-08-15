@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "get_visit_counter_policy_attach" {
 resource "aws_lambda_function" "get_visit_counter" {
   function_name = "getVisitCounter"
   filename      = "getVisitCounter.zip"
-  handler       = "lambda_function.lambda_handler"
+  handler       = "getVisitCounter.lambda_handler"
   runtime       = "python3.13"
 
   role               = aws_iam_role.visit_counter_role.arn

@@ -56,7 +56,7 @@ resource "aws_iam_role_policy_attachment" "visit_counter_policy_attach" {
 resource "aws_lambda_function" "visit_counter" {
   function_name = "pageVisitCounter"
   filename      = "visitCounter.zip"
-  handler       = "lambda_function.lambda_handler"
+  handler       = "visitCounter.lambda_handler"
   runtime       = "python3.13"
 
   role               = aws_iam_role.visit_counter_role.arn

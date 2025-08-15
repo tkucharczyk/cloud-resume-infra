@@ -1,3 +1,4 @@
+
 resource "aws_s3_bucket" "cloud-resume" {
   bucket = "tkucloudresume" 
 }
@@ -37,4 +38,18 @@ resource "aws_s3_bucket_website_configuration" "static_hosting" {
   error_document {
     key = "error.html" 
   }
+}
+
+resource "aws_s3_object" "static_files" {
+  for_each = {
+    "index.html"  = "text/html"
+    "fonts.css"   = "text/css"
+    "resume.css" = "text/css"
+  }
+
+  bucket       = aws_s3_bucket.cloud-resume.id
+  key          = each.key
+  source       = "${path.module}/site/${each.key}"
+  content_type = each.value
+  etag         = filemd5("${path.module}/site/${each.key}")
 }

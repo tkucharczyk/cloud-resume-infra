@@ -26,7 +26,7 @@ resource "aws_apigatewayv2_api" "dynamodb_api" {
 resource "aws_apigatewayv2_integration" "get_visit_counter" {
   api_id                 = aws_apigatewayv2_api.dynamodb_api.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = "arn:aws:lambda:eu-central-1:381492029034:function:getVisitCounter"
+  integration_uri        = aws_lambda_function.get_visit_counter.arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -34,7 +34,7 @@ resource "aws_apigatewayv2_integration" "get_visit_counter" {
 resource "aws_apigatewayv2_integration" "post_visit_counter" {
   api_id                 = aws_apigatewayv2_api.dynamodb_api.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = "arn:aws:lambda:eu-central-1:381492029034:function:pageVisitCounter"
+  integration_uri        = aws_lambda_function.visit_counter.arn
   integration_method     = "POST"
   payload_format_version = "2.0"
 }
@@ -47,7 +47,7 @@ resource "aws_apigatewayv2_route" "get_route" {
 
 resource "aws_apigatewayv2_route" "post_route" {
   api_id    = aws_apigatewayv2_api.dynamodb_api.id
-  route_key = "POST /visit"
+  route_key = "POST /registerVisit"
   target    = "integrations/${aws_apigatewayv2_integration.post_visit_counter.id}"
 }
 
@@ -63,7 +63,7 @@ resource "aws_apigatewayv2_stage" "default_stage" {
   auto_deploy = true
 }
 
-# Uprawnienia do wywołania Lambd
+
 resource "aws_lambda_permission" "get_permission" {
   statement_id  = "AllowApiGatewayInvokeGet"
   action        = "lambda:InvokeFunction"
@@ -78,4 +78,24 @@ resource "aws_lambda_permission" "post_permission" {
   function_name = "pageVisitCounter"
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.dynamodb_api.execution_arn}/*/*"
+}
+
+output "api_gateway_url" {
+  value = aws_apigatewayv2_api.dynamodb_api.api_endpoint
+}
+
+data "template_file" "script_js" {
+  template = file("${path.module}/site/script.js.tpl")
+  vars = {
+    api_gateway_url = aws_apigatewayv2_api.dynamodb_api.api_endpoint
+  }
+}
+
+resource "aws_s3_object" "script_js" {
+  bucket  = aws_s3_bucket.cloud-resume.id
+  key     = "script.js"
+  content = data.template_file.script_js.rendered
+  content_type = "application/javascript"
+  etag    = md5(data.template_file.script_js.rendered)
+  depends_on = [aws_apigatewayv2_api.dynamodb_api]
 }
