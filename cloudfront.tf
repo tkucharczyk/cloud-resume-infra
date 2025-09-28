@@ -2,6 +2,14 @@ data "aws_cloudfront_cache_policy" "CachingOptimized" {
   name = "Managed-CachingOptimized"
 }
 
+resource "aws_cloudfront_origin_access_control" "oac" {
+  name                              = "tkucloudresume-oac"
+  description                       = "Access S3 only through CloudFront"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
 
 resource "aws_cloudfront_distribution" "my_cf" {
     
@@ -9,30 +17,27 @@ resource "aws_cloudfront_distribution" "my_cf" {
   aliases = ["cv.tkuresume.pl",
              "tkuresume.pl"]
   is_ipv6_enabled = true
+  default_root_object = "index.html"
 
   origin {
-	domain_name = "tkucloudresume.s3-website.eu-central-1.amazonaws.com"
-	origin_id   = "tkucloudresume.s3-website.eu-central-1.amazonaws.com"
-    connection_attempts = 3
-    connection_timeout = 10
-
-    custom_origin_config {
-        http_port = 80
-        https_port = 443
-        origin_keepalive_timeout = 5
-        origin_read_timeout = 30
-        origin_protocol_policy = "http-only"
-        origin_ssl_protocols = ["SSLv3","TLSv1","TLSv1.1","TLSv1.2",]
-    }
+	domain_name = aws_s3_bucket.cloud-resume.bucket_regional_domain_name
+	origin_id   = "S3 Origin"
+  origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
   default_cache_behavior {
   cache_policy_id = data.aws_cloudfront_cache_policy.CachingOptimized.id
   compress = true
-  target_origin_id = "tkucloudresume.s3-website.eu-central-1.amazonaws.com"
+  target_origin_id = "S3 Origin"
   viewer_protocol_policy = "redirect-to-https"
   allowed_methods = ["GET", "HEAD"]
   cached_methods  = ["GET", "HEAD"]
+  }
+
+    custom_error_response {
+    error_code            = 404
+    response_code         = 404
+    response_page_path    = "/error.html"
   }
 
   restrictions {
