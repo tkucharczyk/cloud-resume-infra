@@ -3,24 +3,24 @@ resource "aws_apigatewayv2_api" "dynamodb_api" {
   protocol_type = "HTTP"
 
   cors_configuration {
-        allow_credentials = false
-        allow_headers     = [
-            "authorization",
-            "content-type",
-        ]
-        allow_methods     = [
-            "GET",
-            "OPTIONS",
-            "POST",
-        ]
-        allow_origins     = [
-            "*",
-        ]
-        expose_headers    = [
-            "visitcount",
-        ]
-        max_age           = 0
-    }
+    allow_credentials = false
+    allow_headers = [
+      "authorization",
+      "content-type",
+    ]
+    allow_methods = [
+      "GET",
+      "OPTIONS",
+      "POST",
+    ]
+    allow_origins = [
+      "*",
+    ]
+    expose_headers = [
+      "visitcount",
+    ]
+    max_age = 0
+  }
 }
 
 resource "aws_apigatewayv2_integration" "get_visit_counter" {
@@ -92,10 +92,10 @@ data "template_file" "script_js" {
 }
 
 resource "aws_s3_object" "script_js" {
-  bucket  = aws_s3_bucket.cloud-resume.id
-  key     = "script.js"
-  content = data.template_file.script_js.rendered
+  bucket       = aws_s3_bucket.cloud-resume.id
+  key          = "script.js"
+  content      = data.template_file.script_js.rendered
   content_type = "application/javascript"
-  etag    = md5(data.template_file.script_js.rendered)
-  depends_on = [aws_apigatewayv2_api.dynamodb_api]
+  etag         = md5(data.template_file.script_js.rendered)
+  depends_on   = [aws_apigatewayv2_api.dynamodb_api]
 }

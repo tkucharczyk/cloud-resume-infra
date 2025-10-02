@@ -1,9 +1,9 @@
 resource "ovh_domain_zone_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.cf_cert.domain_validation_options : dvo.domain_name => {
-      name   = trimsuffix(dvo.resource_record_name, ".tkuresume.pl.")
-      type   = dvo.resource_record_type
-      value  = dvo.resource_record_value
+      name  = trimsuffix(dvo.resource_record_name, ".tkuresume.pl.")
+      type  = dvo.resource_record_type
+      value = dvo.resource_record_value
     }
   }
 

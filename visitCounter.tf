@@ -22,8 +22,8 @@ resource "aws_iam_policy" "visit_counter_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = "logs:CreateLogGroup",
+        Effect   = "Allow",
+        Action   = "logs:CreateLogGroup",
         Resource = "arn:aws:logs:eu-central-1:381492029034:*"
       },
       {
@@ -59,9 +59,9 @@ resource "aws_lambda_function" "visit_counter" {
   handler       = "visitCounter.lambda_handler"
   runtime       = "python3.13"
 
-  role               = aws_iam_role.visit_counter_role.arn
-  source_code_hash   = filebase64sha256("visitCounter.zip")
+  role             = aws_iam_role.visit_counter_role.arn
+  source_code_hash = filebase64sha256("visitCounter.zip")
 
-  timeout            = 3
-  memory_size        = 128
+  timeout     = 3
+  memory_size = 128
 }

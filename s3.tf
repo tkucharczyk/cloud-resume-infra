@@ -1,6 +1,6 @@
 
 resource "aws_s3_bucket" "cloud-resume" {
-  bucket = "tkucloudresume" 
+  bucket = "tkucloudresume"
 }
 
 resource "aws_s3_bucket_ownership_controls" "cloud-resume" {
@@ -47,8 +47,8 @@ resource "aws_s3_bucket_policy" "cloud-resume" {
 
 resource "aws_s3_object" "static-files" {
   for_each = {
-    "index.html"  = "text/html"
-    "fonts.css"   = "text/css"
+    "index.html" = "text/html"
+    "fonts.css"  = "text/css"
     "resume.css" = "text/css"
   }
 
