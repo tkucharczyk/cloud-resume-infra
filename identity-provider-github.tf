@@ -31,7 +31,69 @@ resource "aws_iam_role" "github_actions" {
             "repo:tkucharczyk/cloud-resume-infra:pull_request"
           ]
         }
-      }
+      },
+
     }]
+  })
+}
+
+resource "aws_iam_role_policy" "tf_backend" {
+  name = "TerraformBackendPolicy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "TfStateBackend"
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "tf_readonly" {
+  name = "TerraformReadOnlyPolicy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ReadOnlyProject"
+        Effect = "Allow"
+        Action = [
+          "apigateway:GET*",
+          "apigateway:Describe*",
+          "lambda:Get*",
+          "lambda:List*",
+          "dynamodb:Describe*",
+          "dynamodb:List*",
+          "cloudfront:Get*",
+          "cloudfront:List*",
+          "acm:Describe*",
+          "acm:List*",
+          "route53:Get*",
+          "route53:List*",
+          "s3:Get*",
+          "s3:List*",
+          "iam:Get*",
+          "iam:List*"
+        ]
+        Resource = "*"
+      }
+    ]
   })
 }
