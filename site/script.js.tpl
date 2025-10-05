@@ -2,7 +2,7 @@ document.getElementById("downloadPdf").addEventListener("click", function () {
     const element = document.getElementById("doc2");
 
     const options = {
-        margin: 10,
+        margin: 2,
         filename: 'moja_strona.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
