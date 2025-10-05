@@ -1,13 +1,16 @@
 document.getElementById("downloadPdf").addEventListener("click", function () {
     const element = document.getElementById("doc2");
+    element.style.transform = 'scale(0.9)';
+    element.style.transformOrigin = 'top left';
 
     const options = {
-        margin: 2,
-        filename: 'moja_strona.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+        margin:       0,
+        filename:     'Tomasz_Kucharczyk_CV.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, windowWidth: 794 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+};
 
     html2pdf().set(options).from(element).save();
 });
