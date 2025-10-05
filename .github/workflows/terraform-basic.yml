@@ -8,6 +8,17 @@ on:
       - ".terraform.lock.hcl"
       - ".github/workflows/**"
 
+permissions:
+  id-token: write  
+  contents: read
+  pull-requests: write 
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  OVH_APPLICATION_KEY: ${{ secrets.OVH_APPLICATION_KEY }}
+  OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
+  OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -16,16 +27,47 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.5
 
-      - name: Terraform Init (bez backendu)
-        run: terraform init -backend=false -input=false
+      - name: Terraform Init
+        run: terraform init -input=false
 
       - name: Terraform Fmt
         run: terraform fmt -recursive
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Terraform Plan
+        shell: bash
+        run: |
+          set -o pipefail
+          terraform plan \
+            -input=false -no-color \
+            -var "ovh_application_key=$OVH_APPLICATION_KEY" \
+            -var "ovh_application_secret=$OVH_APPLICATION_SECRET" \
+            -var "ovh_consumer_key=$OVH_CONSUMER_KEY" \
+            -out=tfplan.bin | tee plan.txt
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: |
+            tfplan.bin
+            plan.txt
+
+      - name: Comment plan on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: plan.txt
