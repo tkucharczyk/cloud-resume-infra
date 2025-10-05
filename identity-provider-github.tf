@@ -28,7 +28,8 @@ resource "aws_iam_role" "github_actions" {
         StringLike = {
           "token.actions.githubusercontent.com:sub" = [
             "repo:tkucharczyk/cloud-resume-infra:ref:refs/heads/*",
-            "repo:tkucharczyk/cloud-resume-infra:pull_request"
+            "repo:tkucharczyk/cloud-resume-infra:pull_request",
+            "repo:tkucharczyk/cloud-resume-infra:environment:prod"         
           ]
         }
       },
