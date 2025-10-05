@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - "**/*.tf"
+      - "**/*.html"
       - ".terraform.lock.hcl"
       - ".github/workflows/**"
 
