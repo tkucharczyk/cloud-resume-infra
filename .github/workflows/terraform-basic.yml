@@ -15,6 +15,9 @@ permissions:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  OVH_APPLICATION_KEY: ${{ secrets.OVH_APPLICATION_KEY }}
+  OVH_APPLICATION_SECRET: ${{ secrets.OVH_APPLICATION_SECRET }}
+  OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
 
 jobs:
   validate:
@@ -45,9 +48,15 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
+        shell: bash
         run: |
-          terraform plan -input=false -no-color -out=tfplan.bin | tee plan.txt
-          exit ${PIPESTATUS[0]}
+          set -o pipefail
+          terraform plan \
+            -input=false -no-color \
+            -var "ovh_application_key=$OVH_APPLICATION_KEY" \
+            -var "ovh_application_secret=$OVH_APPLICATION_SECRET" \
+            -var "ovh_consumer_key=$OVH_CONSUMER_KEY" \
+            -out=tfplan.bin | tee plan.txt
 
       - name: Upload plan artifact
         uses: actions/upload-artifact@v4
