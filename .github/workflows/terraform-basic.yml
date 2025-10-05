@@ -8,6 +8,14 @@ on:
       - ".terraform.lock.hcl"
       - ".github/workflows/**"
 
+permissions:
+  id-token: write  
+  contents: read
+  pull-requests: write 
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -15,6 +23,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -29,3 +43,20 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -no-color -out=tfplan.bin | tee plan.txt
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: |
+            tfplan.bin
+            plan.txt
+
+      - name: Comment plan on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: plan.txt
